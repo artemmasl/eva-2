@@ -5,6 +5,7 @@ import type { Space } from '@/core/entities/space/types';
 
 export const useUiStore = defineStore('ui', () => {
   const isSideMenuOpen = ref(false);
+  const isAiOpen = ref(false);
   const isCallbackOpen = ref(false);
   const isSameLayoutOpen = ref(false);
   const sameLayoutSpace = ref<Space | null>(null);
@@ -19,6 +20,14 @@ export const useUiStore = defineStore('ui', () => {
 
   const toggleSideMenu = () => {
     isSideMenuOpen.value = !isSideMenuOpen.value;
+  };
+
+  const openAi = () => {
+    isAiOpen.value = true;
+  };
+
+  const closeAi = () => {
+    isAiOpen.value = false;
   };
 
   const openCallback = () => {
@@ -45,6 +54,9 @@ export const useUiStore = defineStore('ui', () => {
     openSideMenu,
     closeSideMenu,
     toggleSideMenu,
+    isAiOpen,
+    openAi,
+    closeAi,
     isCallbackOpen,
     openCallback,
     closeCallback,

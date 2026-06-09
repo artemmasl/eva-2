@@ -2,7 +2,10 @@
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
+import BaseBadge from '@/components/common/BaseBadge.vue';
+import BaseIcon from '@/components/common/BaseIcon.vue';
 import type { Space } from '@/core/entities/space/types';
+import { useStorefrontLink } from '@/core/routing/storefront-link';
 import { useFavoritesStore } from '@/stores/modules/favorites.store';
 import { useSpaceDetailsStore } from '@/stores/modules/space-details.store';
 import { useUiStore } from '@/stores/modules/ui.store';
@@ -23,9 +26,12 @@ type Condition = {
 };
 
 const route = useRoute();
+const link = useStorefrontLink();
 const spaceDetailsStore = useSpaceDetailsStore();
 const favoritesStore = useFavoritesStore();
 const uiStore = useUiStore();
+
+const complexesTo = computed(() => link({ name: 'complexes' }));
 
 const openSameLayout = () => {
   if (space.value) {
@@ -273,7 +279,7 @@ const notify = (message: string) => {
     <section v-else-if="spaceDetailsStore.error" :class="$style.state">
       <h1>Помещение не найдено</h1>
       <p>{{ spaceDetailsStore.error }}</p>
-      <RouterLink :class="$style.primaryLink" to="/">Вернуться к комплексам</RouterLink>
+      <RouterLink :class="$style.primaryLink" :to="complexesTo">Вернуться к комплексам</RouterLink>
     </section>
 
     <div v-else-if="space" :class="$style.layout">
@@ -285,9 +291,7 @@ const notify = (message: string) => {
           </div>
 
           <button type="button" :class="$style.fullscreen" aria-label="На весь экран">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />
-            </svg>
+            <BaseIcon name="expand" :size="18" />
           </button>
 
           <div v-if="activeView === 'map'" :class="$style.mapView">
@@ -324,30 +328,23 @@ const notify = (message: string) => {
             </div>
             <div :class="$style.iconRail">
               <button type="button" :aria-label="isFavorite ? 'Убрать из избранного' : 'В избранное'" :aria-pressed="isFavorite" :class="isFavorite && $style.iconActive" @click="toggleFavorite">
-                <svg viewBox="0 0 24 24" width="18" height="18" :fill="isFavorite ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 20s-7-4.35-9.33-8.3C1.3 9.36 2.2 6.4 5 5.6c1.96-.56 3.7.5 4.6 1.7L12 9l2.4-1.7c.9-1.2 2.64-2.26 4.6-1.7 2.8.8 3.7 3.76 2.33 6.1C19 15.65 12 20 12 20z" />
-                </svg>
+                <BaseIcon :name="isFavorite ? 'heart-filled' : 'heart'" :size="18" />
               </button>
               <button type="button" aria-label="Поделиться">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="18" cy="5" r="2.5" /><circle cx="6" cy="12" r="2.5" /><circle cx="18" cy="19" r="2.5" />
-                  <path d="M8.2 10.8 15.8 6.2M8.2 13.2l7.6 4.6" />
-                </svg>
+                <BaseIcon name="share" :size="18" />
               </button>
               <button type="button" aria-label="Скачать PDF">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" /><path d="M14 3v5h5" />
-                </svg>
+                <BaseIcon name="file" :size="18" />
               </button>
             </div>
           </div>
 
           <div v-if="space.badges.length" :class="$style.badges">
-            <span
+            <BaseBadge
               v-for="badge in space.badges"
               :key="badge"
-              :class="[$style.badge, highlightBadge(badge) && $style.badgeAccent]"
-            >{{ badge }}</span>
+              :variant="highlightBadge(badge) ? 'primary' : 'neutral'"
+            >{{ badge }}</BaseBadge>
             <button type="button" :class="$style.badgeMore" aria-label="Ещё метки">…</button>
           </div>
 
@@ -381,9 +378,7 @@ const notify = (message: string) => {
 
           <button type="button" :class="$style.charsToggle" @click="isCharsOpen = !isCharsOpen">
             Все характеристики
-            <svg :class="[$style.chevron, isCharsOpen && $style.chevronOpen]" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="m6 9 6 6 6-6" />
-            </svg>
+            <BaseIcon name="chevron-down" :size="16" :class="[$style.chevron, isCharsOpen && $style.chevronOpen]" />
           </button>
 
           <dl v-if="isCharsOpen" :class="$style.chars">
@@ -393,8 +388,8 @@ const notify = (message: string) => {
             </div>
           </dl>
 
-          <div v-if="featureChips.length" :class="$style.chips">
-            <span v-for="chip in featureChips" :key="chip">{{ chip }}</span>
+          <div v-if="featureChips.length" class="flex flex-wrap gap-2">
+            <BaseBadge v-for="chip in featureChips" :key="chip">{{ chip }}</BaseBadge>
           </div>
         </div>
 

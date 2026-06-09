@@ -1,16 +1,9 @@
 from pydantic import BaseModel
 
+from app.modules.developers.schemas import DeveloperSchema
 from app.modules.theme.schemas import ThemeConfigSchema
 
-
-class DeveloperSchema(BaseModel):
-    id: str
-    name: str
-    slug: str
-    logo: str
-    phone: str
-    domains: list[str]
-    theme_config: ThemeConfigSchema
+__all__ = ["DeveloperSchema", "TenantSchema"]
 
 
 class TenantSchema(BaseModel):

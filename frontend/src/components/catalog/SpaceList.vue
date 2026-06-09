@@ -13,7 +13,7 @@ const seenSpaceIds = ref(new Set<string>());
 let previousSpaceIds: string[] = [];
 let animationTimeout: ReturnType<typeof setTimeout> | undefined;
 
-const enterAnimationDuration = 520;
+const enterAnimationDuration = 560;
 const enterAnimationMaxDelay = 160;
 
 const isAppendUpdate = (previousIds: string[], nextIds: string[]): boolean => (
@@ -73,7 +73,7 @@ onBeforeUnmount(() => {
   <TransitionGroup
     name="space-card"
     tag="section"
-    class="grid grid-cols-4 gap-6 max-[1180px]:grid-cols-3 max-[860px]:grid-cols-2 max-[560px]:grid-cols-1"
+    class="grid grid-cols-4 gap-6 pt-2 max-[1180px]:grid-cols-3 max-[860px]:grid-cols-2 max-[560px]:grid-cols-1"
   >
     <div
       v-for="space in props.spaces"
@@ -91,7 +91,7 @@ onBeforeUnmount(() => {
 <style module lang="scss">
 .enteringCard {
   opacity: 0;
-  animation: space-card-enter 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: space-card-enter 560ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
   animation-delay: var(--space-card-delay, 0ms);
   backface-visibility: hidden;
   transform: translate3d(0, 0, 0);
@@ -103,12 +103,17 @@ onBeforeUnmount(() => {
 }
 
 @keyframes space-card-enter {
-  from {
+  0% {
     opacity: 0;
-    transform: translate3d(0, 14px, 0) scale(0.985);
+    transform: translate3d(0, 26px, 0) scale(0.92);
   }
 
-  to {
+  55% {
+    opacity: 1;
+    transform: translate3d(0, -6px, 0) scale(1.015);
+  }
+
+  100% {
     opacity: 1;
     transform: translate3d(0, 0, 0) scale(1);
   }
@@ -120,17 +125,15 @@ onBeforeUnmount(() => {
   transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Take leaving cards out of flow immediately so entering cards land at their
+   final position right away — otherwise the post-removal reflow triggers a
+   second `move` transition on top of the entrance animation. */
 .space-card-leave-active {
-  transition: opacity 140ms ease-out;
-}
-
-.space-card-leave-to {
-  opacity: 0;
+  display: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :global(.space-card-move),
-  :global(.space-card-leave-active) {
+  :global(.space-card-move) {
     transition: none;
   }
 }

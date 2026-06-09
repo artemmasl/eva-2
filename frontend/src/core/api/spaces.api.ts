@@ -25,6 +25,8 @@ export const spacesApi = {
   getSpaces: (filters: SpaceFilters = {}, pagination: SpacePagination = {}) => (
     apiClient<SpacesPage>(`/api/spaces${toSearchParams({ ...filters, ...pagination })}`)
   ),
-  getFiltersMeta: () => apiClient<SpaceFiltersMeta>('/api/spaces/filters'),
+  getFiltersMeta: (filters: SpaceFilters = {}) => (
+    apiClient<SpaceFiltersMeta>(`/api/spaces/filters${toSearchParams(filters)}`)
+  ),
   getSpace: (id: string) => apiClient<Space>(`/api/spaces/${id}`),
 };

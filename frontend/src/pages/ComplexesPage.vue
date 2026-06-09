@@ -5,13 +5,16 @@ import { useRoute } from 'vue-router';
 import ComplexesMap from '@/components/complexes/ComplexesMap.vue';
 import type { ComplexSummary } from '@/core/entities/complex/types';
 import { getComplexes } from '@/core/entities/complex/use-cases';
+import { useStorefrontLink } from '@/core/routing/storefront-link';
 
 const route = useRoute();
+const link = useStorefrontLink();
 const complexes = ref<ComplexSummary[]>([]);
 const isLoading = ref(false);
 const error = ref<string | null>(null);
 
 const isMapView = computed(() => route.query.view === 'map');
+const developerSlug = computed(() => String(route.params.developer ?? ''));
 
 const formatPrice = (amount: number): string => (
   new Intl.NumberFormat('ru-RU', {
@@ -44,7 +47,7 @@ onMounted(async () => {
   error.value = null;
 
   try {
-    complexes.value = await getComplexes();
+    complexes.value = await getComplexes(developerSlug.value);
   } catch {
     error.value = 'Не удалось загрузить жилые комплексы';
   } finally {
@@ -58,8 +61,8 @@ onMounted(async () => {
     <header class="flex items-center justify-between gap-4">
       <h1 class="text-2xl font-semibold" :class="$style.title">Все жилые комплексы</h1>
       <div class="flex rounded-full p-1" :class="$style.viewToggle">
-        <RouterLink :class="[$style.viewOption, !isMapView && $style.viewOptionActive]" :to="{ name: 'complexes' }">Список</RouterLink>
-        <RouterLink :class="[$style.viewOption, isMapView && $style.viewOptionActive]" :to="{ name: 'complexes', query: { view: 'map' } }">На карте</RouterLink>
+        <RouterLink :class="[$style.viewOption, !isMapView && $style.viewOptionActive]" :to="link({ name: 'complexes' })">Список</RouterLink>
+        <RouterLink :class="[$style.viewOption, isMapView && $style.viewOptionActive]" :to="link({ name: 'complexes', query: { view: 'map' } })">На карте</RouterLink>
       </div>
     </header>
 
@@ -74,7 +77,7 @@ onMounted(async () => {
         :key="complex.id"
         class="flex flex-col overflow-hidden rounded-3xl no-underline"
         :class="$style.card"
-        :to="{ name: 'complex-landing', params: { complexId: complex.id } }"
+        :to="link({ name: 'complex-landing', params: { complexId: complex.id } })"
       >
         <div :class="$style.cover">
           <span :class="$style.status">{{ complex.delivery_status }}</span>

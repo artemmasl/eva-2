@@ -73,14 +73,21 @@ def map_feed_complex_to_schema(feed_complex: dict) -> ComplexSchema:
     )
 
 
-async def get_complexes() -> list[ComplexSchema]:
+async def get_complexes(developer_id: str | None = None) -> list[ComplexSchema]:
     feed_complexes = await get_feed_complexes()
+
+    if developer_id is not None:
+        feed_complexes = [
+            feed_complex
+            for feed_complex in feed_complexes
+            if feed_complex["developer_id"] == developer_id
+        ]
 
     return [map_feed_complex_to_schema(feed_complex) for feed_complex in feed_complexes]
 
 
-async def get_complex_summaries() -> list[ComplexSummarySchema]:
-    complexes = await get_complexes()
+async def get_complex_summaries(developer_id: str | None = None) -> list[ComplexSummarySchema]:
+    complexes = await get_complexes(developer_id)
     spaces = await get_spaces()
     available_spaces = [space for space in spaces if space.status == "available"]
 

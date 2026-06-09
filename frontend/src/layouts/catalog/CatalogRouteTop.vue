@@ -11,6 +11,37 @@ const catalogStore = useCatalogStore();
 
 const activeView = computed(() => resolveCatalogView(route.query.view));
 
+const spaceTypeNounForms: Record<string, [string, string, string]> = {
+  flat: ['квартира', 'квартиры', 'квартир'],
+  apartment: ['апартамент', 'апартамента', 'апартаментов'],
+  parking: ['парковка', 'парковки', 'парковок'],
+  storage: ['кладовка', 'кладовки', 'кладовок'],
+  commercial: ['помещение', 'помещения', 'помещений'],
+};
+
+const pluralize = (count: number, [one, few, many]: [string, string, string]): string => {
+  const mod10 = count % 10;
+  const mod100 = count % 100;
+
+  if (mod10 === 1 && mod100 !== 11) {
+    return one;
+  }
+
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) {
+    return few;
+  }
+
+  return many;
+};
+
+const totalLabel = computed(() => {
+  const { stype, is_apartment: isApartment } = catalogStore.filters;
+  const key = stype === 'flat' && isApartment ? 'apartment' : stype ?? 'flat';
+  const forms = spaceTypeNounForms[key] ?? spaceTypeNounForms.flat;
+
+  return `${catalogStore.total} ${pluralize(catalogStore.total, forms)}`;
+});
+
 const viewOptions: { key: CatalogView; label: string }[] = [
   { key: 'visual', label: 'Визуальный подбор' },
   { key: 'plans', label: 'Планировки' },
@@ -27,7 +58,7 @@ const viewLink = (view: CatalogView): RouteLocationRaw => ({
 
 <template>
   <section class="mx-auto mb-6 flex w-full items-center justify-between gap-6" :class="$style.topBar">
-    <h1 class="m-0 text-xl font-medium">{{ catalogStore.total }} квартир</h1>
+    <h1 class="m-0 text-xl font-medium">{{ totalLabel }}</h1>
     <div class="flex flex-wrap items-center justify-end gap-3" :class="$style.toolbar">
       <button class="h-9 cursor-pointer rounded-full border-0 px-5" :class="$style.toolbarButton" type="button">Сначала дешевые</button>
       <button class="h-9 cursor-pointer rounded-full border-0 bg-transparent px-5" :class="$style.toolbarButtonMuted" type="button">Группировать по планировке</button>

@@ -2,7 +2,11 @@
 import { computed, ref } from 'vue';
 
 import SpaceCard from '@/components/catalog/SpaceCard.vue';
+import BaseButton from '@/components/common/BaseButton.vue';
+import BaseChip from '@/components/common/BaseChip.vue';
 import BaseDropdown from '@/components/common/BaseDropdown.vue';
+import BaseIcon from '@/components/common/BaseIcon.vue';
+import BaseInput from '@/components/common/BaseInput.vue';
 import {
   GENERAL_COLLECTION_ID,
   useFavoritesStore,
@@ -80,43 +84,34 @@ const shareCollection = async () => {
       <div class="flex flex-wrap items-center gap-5">
         <h1 class="m-0 text-2xl font-medium">Мое избранное</h1>
         <div class="flex flex-wrap gap-2">
-          <button
+          <BaseChip
             v-for="option in stypeOptions"
             :key="option.value"
-            type="button"
-            class="h-9 cursor-pointer rounded-full border-0 px-4 text-sm transition-colors"
-            :class="favoritesStore.activeStype === option.value
-              ? 'bg-[#111827] text-white'
-              : 'bg-white text-[#111827] shadow-[0_8px_24px_rgba(15,23,42,0.06)]'"
+            :active="favoritesStore.activeStype === option.value"
             @click="favoritesStore.setActiveStype(option.value)"
           >
             {{ option.label }}
-          </button>
+          </BaseChip>
         </div>
       </div>
 
       <div class="flex items-center gap-4 text-sm">
-        <span v-if="shareMessage" class="text-[#2945ff]">{{ shareMessage }}</span>
+        <span v-if="shareMessage" class="text-primary">{{ shareMessage }}</span>
         <button
           type="button"
-          class="inline-flex cursor-pointer items-center gap-2 border-0 bg-transparent text-[#2945ff]"
+          class="inline-flex cursor-pointer items-center gap-2 border-0 bg-transparent text-primary"
           @click="shareCollection"
         >
-          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="18" cy="5" r="2.5" /><circle cx="6" cy="12" r="2.5" /><circle cx="18" cy="19" r="2.5" />
-            <path d="M8.2 10.8 15.8 6.2M8.2 13.2l7.6 4.6" />
-          </svg>
+          <BaseIcon name="share" :size="17" />
           Поделиться подборкой
         </button>
         <button
           type="button"
-          class="inline-flex cursor-pointer items-center gap-2 border-0 bg-transparent text-[#64748b] disabled:opacity-40"
+          class="inline-flex cursor-pointer items-center gap-2 border-0 bg-transparent text-text-secondary disabled:opacity-40"
           :disabled="isGeneralActive"
           @click="removeActiveCollection"
         >
-          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />
-          </svg>
+          <BaseIcon name="trash" :size="17" />
           Удалить подборку
         </button>
       </div>
@@ -153,32 +148,22 @@ const shareCollection = async () => {
         <button
           v-if="!isCreating"
           type="button"
-          class="mt-1 flex h-12 cursor-pointer items-center gap-2 rounded-2xl border-0 bg-transparent px-4 text-sm text-[#2945ff]"
+          class="mt-1 flex h-12 cursor-pointer items-center gap-2 rounded-2xl border-0 bg-transparent px-4 text-sm text-primary"
           @click="startCreating"
         >
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="9" /><path d="M12 8v8M8 12h8" />
-          </svg>
+          <BaseIcon name="plus-circle" :size="18" />
           Новая подборка
         </button>
 
         <div v-else class="mt-1 flex items-center gap-2 px-1">
-          <input
+          <BaseInput
             v-model="newCollectionName"
             type="text"
             placeholder="Название подборки"
-            class="h-10 w-full rounded-full border border-[#e2e8f0] bg-white px-4 text-sm outline-none focus:border-[#2945ff]"
-            autofocus
             @keyup.enter="confirmCreate"
             @keyup.esc="isCreating = false"
           />
-          <button
-            type="button"
-            class="grid h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-full border-0 bg-[#2945ff] text-sm text-white"
-            @click="confirmCreate"
-          >
-            OK
-          </button>
+          <BaseButton active class="h-10 w-10 shrink-0 px-0" @click="confirmCreate">OK</BaseButton>
         </div>
       </aside>
 

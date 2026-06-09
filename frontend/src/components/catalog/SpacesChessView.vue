@@ -4,10 +4,12 @@ import { useRoute, useRouter } from 'vue-router';
 
 import { getAllCatalogSpaces } from '@/core/entities/space/use-cases';
 import type { Space } from '@/core/entities/space/types';
+import { useStorefrontLink } from '@/core/routing/storefront-link';
 import { useCatalogStore } from '@/stores/modules/catalog.store';
 
 const route = useRoute();
 const router = useRouter();
+const link = useStorefrontLink();
 const catalogStore = useCatalogStore();
 
 const isLoading = ref(false);
@@ -66,7 +68,7 @@ const load = async () => {
 };
 
 const openSpace = (space: Space) => {
-  void router.push({ name: 'space-details', params: { complexId: complexId.value, id: space.id } });
+  void router.push(link({ name: 'space-details', params: { complexId: complexId.value, id: space.id } }));
 };
 
 onMounted(load);
@@ -81,6 +83,7 @@ watch([complexId, () => catalogStore.filters], load, { deep: true });
   <section v-else-if="!rows.length" :class="$style.placeholder">
     <h2 :class="$style.title">Нет квартир</h2>
     <p :class="$style.text">По текущим фильтрам нет доступных квартир для шахматки.</p>
+    <RouterLink :class="$style.cta" :to="link({ name: 'catalog', params: { complexId }, query: {} })">Перейти к планировкам</RouterLink>
   </section>
 
   <section v-else :class="$style.board">
@@ -126,6 +129,17 @@ watch([complexId, () => catalogStore.filters], load, { deep: true });
   margin: 0;
   max-width: 460px;
   color: var(--color-text-secondary);
+}
+
+.cta {
+  padding: 12px 24px;
+  font-weight: 600;
+  color: var(--color-text-inverse);
+  text-decoration: none;
+  cursor: pointer;
+  background: var(--color-primary);
+  border: 0;
+  border-radius: var(--radius-pill);
 }
 
 .board {

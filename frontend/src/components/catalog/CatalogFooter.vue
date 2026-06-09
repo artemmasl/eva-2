@@ -1,7 +1,16 @@
+<script setup lang="ts">
+import { computed } from 'vue';
+
+import { useStorefrontLink } from '@/core/routing/storefront-link';
+
+const link = useStorefrontLink();
+const homeTo = computed(() => link({ name: 'complexes' }));
+</script>
+
 <template>
   <footer class="mx-auto mt-12 max-w-[1240px]">
     <div class="grid grid-cols-[auto_1.3fr_1fr_1fr] items-center gap-10 rounded-[28px] bg-white px-9 py-7 max-[900px]:grid-cols-1 max-[900px]:gap-6">
-      <RouterLink class="grid h-[42px] w-[42px] place-items-center text-[34px] font-black text-[#0b2447] no-underline" to="/">A</RouterLink>
+      <RouterLink class="grid h-[42px] w-[42px] place-items-center text-[34px] font-black text-[#0b2447] no-underline" :to="homeTo">A</RouterLink>
 
       <div class="flex flex-wrap gap-x-[18px] gap-y-2 text-xs text-[#111827] [&_a]:text-[#2348ff] [&_a]:no-underline [&_span]:w-full">
         <span>Отдел продаж:</span>

@@ -5,7 +5,10 @@ import { Swiper, SwiperSlide } from 'swiper/vue';
 import 'swiper/css';
 import 'swiper/css/pagination';
 
+import BaseBadge from '@/components/common/BaseBadge.vue';
+import BaseIcon from '@/components/common/BaseIcon.vue';
 import type { Space } from '@/core/entities/space/types';
+import { useStorefrontLink } from '@/core/routing/storefront-link';
 import { useFavoritesStore } from '@/stores/modules/favorites.store';
 
 const props = defineProps<{
@@ -13,13 +16,14 @@ const props = defineProps<{
 }>();
 
 const favoritesStore = useFavoritesStore();
+const link = useStorefrontLink();
 
 const isFavorite = computed(() => favoritesStore.isFavorite(props.space.id));
 
 const detailsTo = computed(() => (
   props.space.complex_id
-    ? { name: 'space-details', params: { complexId: props.space.complex_id, id: props.space.id } }
-    : { name: 'complexes' }
+    ? link({ name: 'space-details', params: { complexId: props.space.complex_id, id: props.space.id } })
+    : link({ name: 'complexes' })
 ));
 
 const toggleFavorite = () => {
@@ -138,18 +142,19 @@ const detailChips = computed(() => {
 </script>
 
 <template>
-  <article class="relative grid h-full overflow-hidden rounded-[28px] border border-[#e5e7eb] bg-white shadow-[0_20px_60px_rgba(15,23,42,0.07)]">
+  <RouterLink
+    :to="detailsTo"
+    class="group relative grid h-full overflow-hidden rounded-[28px] border border-[#e5e7eb] bg-white text-inherit no-underline shadow-[0_20px_60px_rgba(15,23,42,0.07)] transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1.5 hover:shadow-[0_28px_70px_rgba(15,23,42,0.14)]"
+  >
     <button
       type="button"
       class="absolute right-3.5 top-3.5 z-10 grid h-9 w-9 cursor-pointer place-items-center rounded-full border-0 bg-white/90 shadow-[0_6px_18px_rgba(15,23,42,0.18)] backdrop-blur transition-colors"
       :class="isFavorite ? 'text-[#2945ff]' : 'text-[#475569]'"
       :aria-label="isFavorite ? 'Убрать из избранного' : 'В избранное'"
       :aria-pressed="isFavorite"
-      @click="toggleFavorite"
+      @click.prevent.stop="toggleFavorite"
     >
-      <svg viewBox="0 0 24 24" width="19" height="19" :fill="isFavorite ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 20s-7-4.35-9.33-8.3C1.3 9.36 2.2 6.4 5 5.6c1.96-.56 3.7.5 4.6 1.7L12 9l2.4-1.7c.9-1.2 2.64-2.26 4.6-1.7 2.8.8 3.7 3.76 2.33 6.1C19 15.65 12 20 12 20z" />
-      </svg>
+      <BaseIcon :name="isFavorite ? 'heart-filled' : 'heart'" :size="19" />
     </button>
     <div class="grid h-[190px] place-items-center bg-linear-to-br from-[#2563eb] to-[#111827] text-[44px] font-extrabold text-white [&_img]:h-full [&_img]:w-full [&_img]:object-cover">
       <Swiper
@@ -171,18 +176,17 @@ const detailChips = computed(() => {
         <h3 class="m-0 min-h-[58px] text-[22px] leading-[1.3]">{{ cardTitle || typeLabel }}</h3>
       </div>
 
-      <div v-if="detailChips.length" class="flex min-h-[34px] flex-wrap gap-2 [&_span]:rounded-full [&_span]:bg-[#f1f5f9] [&_span]:px-2.5 [&_span]:py-2 [&_span]:text-[13px] [&_span]:text-[#475569]">
-        <span v-for="chip in detailChips" :key="chip">{{ chip }}</span>
+      <div v-if="detailChips.length" class="flex min-h-[34px] flex-wrap gap-2">
+        <BaseBadge v-for="chip in detailChips" :key="chip">{{ chip }}</BaseBadge>
       </div>
 
       <div class="flex items-center justify-between gap-4">
         <strong class="text-xl">{{ formatPrice(space.price.amount, space.price.currency) }}</strong>
-        <RouterLink class="rounded-full bg-[#2563eb] px-3.5 py-2.5 text-white no-underline" :to="detailsTo">Details</RouterLink>
       </div>
 
-      <div v-if="space.badges.length" class="flex min-h-[26px] flex-wrap gap-2 [&_span]:rounded-full [&_span]:bg-[#f3f4f6] [&_span]:px-2.5 [&_span]:py-1.5 [&_span]:text-xs [&_span]:text-[#111827]">
-        <span v-for="badge in space.badges" :key="badge">{{ badge }}</span>
+      <div v-if="space.badges.length" class="flex min-h-[26px] flex-wrap gap-2">
+        <BaseBadge v-for="badge in space.badges" :key="badge" variant="info" size="sm">{{ badge }}</BaseBadge>
       </div>
     </div>
-  </article>
+  </RouterLink>
 </template>

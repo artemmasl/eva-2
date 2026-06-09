@@ -6,6 +6,12 @@ class Settings(BaseSettings):
     mongodb_url: str = "mongodb://localhost:27017"
     mongodb_database: str = "eva_2"
 
+    yandex_folder_id: str = ""
+    yandex_api_key: str = ""
+    yandex_model: str = "yandexgpt"
+
+    admin_password: str = "admin"
+
     model_config = SettingsConfigDict(env_file=".env")
 
 

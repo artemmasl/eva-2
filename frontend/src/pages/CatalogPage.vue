@@ -5,8 +5,8 @@
       <SpacesChessView v-else-if="activeView === 'chess'" />
       <template v-else>
         <SpaceList :spaces="catalogStore.visibleSpaces" />
-        <div ref="loadMoreTrigger" class="min-h-12">
-          <p v-if="catalogStore.isLoadingMore" class="rounded-3xl bg-white p-10">Loading...</p>
+        <div ref="loadMoreTrigger" class="grid min-h-12 place-items-center py-4">
+          <span v-if="catalogStore.isLoadingMore" :class="$style.spinner" aria-label="Загрузка" />
         </div>
       </template>
       <Transition name="loading-overlay">
@@ -21,7 +21,10 @@
           :initial="{ opacity: 0 }"
           :enter="{ opacity: 1, transition: { duration: 160, ease: 'easeOut' } }"
         >
-          <span class="animate-pulse rounded-full px-5 py-3" :class="$style.loadingPill">Loading...</span>
+          <span class="inline-flex items-center gap-2.5 rounded-full px-5 py-3" :class="$style.loadingPill">
+            <span :class="$style.spinner" />
+            <span>Загрузка</span>
+          </span>
         </div>
       </Transition>
     </div>
@@ -115,6 +118,26 @@ onBeforeUnmount(() => {
   color: var(--color-text-primary);
   background: color-mix(in srgb, var(--color-surface) 90%, transparent);
   box-shadow: var(--shadow-card);
+}
+
+.spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid color-mix(in srgb, var(--color-primary) 24%, transparent);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: catalog-spin 640ms linear infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation-duration: 1400ms;
+  }
+}
+
+@keyframes catalog-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>
 

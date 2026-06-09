@@ -13,6 +13,15 @@
 - prefer typed interfaces
 - reusable composables
 
+# Base Components (MANDATORY)
+
+- a base UI kit lives in `src/components/common/` — see `docs/UI_COMPONENTS.md` and the `/ui-kit` page
+- ALWAYS reuse kit components when building markup: `BaseButton`, `BaseIconButton`, `BaseButtonGroup`, `BaseInput`, `BaseTextarea`, `BaseField`, `BaseDropdown`, `BaseCheckbox`, `BaseToggle`, `BaseChip`, `BaseBadge`, `RangeSlider`, `BaseCard`, `BaseModal`, `BaseIcon`
+- never hand-roll raw `<input>`, `<button>`, chips or badges if a kit component exists
+- never paste inline `<svg>` — add a `currentColor` SVG to `src/assets/icons/` and render via `<BaseIcon name="..." />`
+- masked inputs use `BaseInput`'s `mask` prop (powered by `maska`)
+- use design-token utilities (`bg-primary`, `text-text-secondary`, `rounded-pill`), never hardcoded brand hex
+
 # Styling Rules
 
 - SCSS modules preferred

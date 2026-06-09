@@ -1,29 +1,37 @@
-from app.modules.tenants.schemas import DeveloperSchema, TenantSchema
-from app.modules.theme.repository import THEME_CONFIG
-
-
-TENANT = TenantSchema(
-    id="tenant-1",
-    domain="localhost",
-    theme_config=THEME_CONFIG,
-    developer=DeveloperSchema(
-        id="developer-1",
-        name="СК «Атлас девелопмент»",
-        slug="allio-demo",
-        logo="",
-        phone="+7 (343) 364-56-59",
-        domains=["localhost"],
-        theme_config=THEME_CONFIG,
-    ),
+from app.modules.developers.repository import (
+    get_developer,
+    get_developer_by_domain,
+    get_developer_by_slug,
 )
+from app.modules.developers.schemas import DeveloperSchema
+from app.modules.tenants.schemas import TenantSchema
 
 
-async def get_tenant_by_domain(domain: str) -> TenantSchema:
-    return TENANT
+def _build_tenant(developer: DeveloperSchema) -> TenantSchema:
+    domain = developer.domains[0] if developer.domains else "localhost"
+
+    return TenantSchema(
+        id=f"tenant-{developer.id}",
+        domain=domain,
+        theme_config=developer.theme_config,
+        developer=developer,
+    )
+
+
+async def get_tenant_by_domain(domain: str) -> TenantSchema | None:
+    developer = await get_developer_by_domain(domain)
+
+    return _build_tenant(developer) if developer else None
+
+
+async def get_tenant_by_slug(slug: str) -> TenantSchema | None:
+    developer = await get_developer_by_slug(slug)
+
+    return _build_tenant(developer) if developer else None
 
 
 async def get_tenant(tenant_id: str) -> TenantSchema | None:
-    if tenant_id == TENANT.id:
-        return TENANT
+    developer_id = tenant_id.removeprefix("tenant-")
+    developer = await get_developer(developer_id)
 
-    return None
+    return _build_tenant(developer) if developer else None

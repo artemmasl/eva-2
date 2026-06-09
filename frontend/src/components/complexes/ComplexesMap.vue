@@ -4,12 +4,14 @@ import { useRouter } from 'vue-router';
 
 import type { ComplexSummary } from '@/core/entities/complex/types';
 import { YandexMapsKeyMissingError, loadYandexMaps } from '@/core/maps/yandex';
+import { useStorefrontLink } from '@/core/routing/storefront-link';
 
 const props = defineProps<{
   complexes: ComplexSummary[];
 }>();
 
 const router = useRouter();
+const link = useStorefrontLink();
 const mapEl = ref<HTMLElement>();
 const status = ref<'loading' | 'ready' | 'no-key' | 'error'>('loading');
 
@@ -76,7 +78,7 @@ onMounted(async () => {
       );
 
       placemark.events.add('click', () => {
-        void router.push({ name: 'complex-landing', params: { complexId: complex.id } });
+        void router.push(link({ name: 'complex-landing', params: { complexId: complex.id } }));
       });
 
       map.geoObjects.add(placemark);

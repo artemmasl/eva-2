@@ -58,6 +58,8 @@ class NumberRangeSchema(BaseModel):
 
 class SpaceFiltersMetaSchema(BaseModel):
     stypes: list[str]
+    has_flats: bool
+    has_apartments: bool
     price: NumberRangeSchema
     area: NumberRangeSchema
     floor: NumberRangeSchema

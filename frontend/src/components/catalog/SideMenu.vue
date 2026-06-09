@@ -1,7 +1,24 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+import type { RouteLocationRaw } from 'vue-router';
+
+import { useStorefrontLink } from '@/core/routing/storefront-link';
+import { useTenantStore } from '@/stores/modules/tenant.store';
 import { useUiStore } from '@/stores/modules/ui.store';
 
 const uiStore = useUiStore();
+const tenantStore = useTenantStore();
+const link = useStorefrontLink();
+
+const navItems = computed<{ label: string; to: RouteLocationRaw }[]>(() => [
+  { label: 'Все комплексы', to: link({ name: 'complexes' }) },
+  { label: 'Избранное', to: link({ name: 'favorites' }) },
+]);
+
+const developer = computed(() => tenantStore.tenant?.developer ?? null);
+const developerName = computed(() => developer.value?.name ?? 'Строительная компания');
+const salesPhone = computed(() => developer.value?.phone ?? '+7 (343) 364-56-59');
+const salesPhoneHref = computed(() => `tel:${salesPhone.value.replace(/[^\d+]/g, '')}`);
 </script>
 
 <template>
@@ -27,15 +44,27 @@ const uiStore = useUiStore();
         </button>
 
         <h2 class="text-2xl font-semibold leading-tight" :class="$style.title">
-          Строительная компания «Атлас люкс»
+          {{ developerName }}
         </h2>
+
+        <nav class="flex flex-col gap-1" :class="$style.menuNav" aria-label="Основная навигация">
+          <RouterLink
+            v-for="item in navItems"
+            :key="item.label"
+            :to="item.to"
+            :class="$style.menuLink"
+            @click="uiStore.closeSideMenu()"
+          >
+            {{ item.label }}
+          </RouterLink>
+        </nav>
 
         <section class="flex flex-col gap-1.5" :class="$style.block">
           <h3 class="mb-1 text-lg font-semibold" :class="$style.blockTitle">Отдел продаж</h3>
           <p>ул. Белинского, 169Б/1</p>
           <p>Пн-Пт: 9:00 - 20:00</p>
           <p>Сб-Вс: 10:00 - 18:00</p>
-          <a href="tel:+73433645659">+7 (343) 364-56-59</a>
+          <a :href="salesPhoneHref">{{ salesPhone }}</a>
           <a href="mailto:sales@atlasgroup.su">sales@atlasgroup.su</a>
         </section>
 
@@ -99,6 +128,26 @@ const uiStore = useUiStore();
 
 .title {
   letter-spacing: -0.01em;
+}
+
+.menuNav {
+  flex: 1 1 auto;
+  padding: 8px 0;
+  border-top: 1px solid color-mix(in srgb, var(--color-text-inverse) 18%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-text-inverse) 18%, transparent);
+}
+
+.menuLink {
+  padding: 14px 0;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--color-text-inverse);
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 0.8;
+  }
 }
 
 .block {

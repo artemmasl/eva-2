@@ -2,6 +2,7 @@
 import { computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+import AiAssistant from '@/components/catalog/AiAssistant.vue';
 import CallbackModal from '@/components/catalog/CallbackModal.vue';
 import CatalogContainer from '@/components/catalog/CatalogContainer.vue';
 import CatalogFooter from '@/components/catalog/CatalogFooter.vue';
@@ -9,6 +10,7 @@ import CatalogHeader from '@/components/catalog/CatalogHeader.vue';
 import SameLayoutModal from '@/components/catalog/SameLayoutModal.vue';
 import SideMenu from '@/components/catalog/SideMenu.vue';
 import { applyThemeConfig } from '@/core/theme/apply-theme';
+import { useStorefrontLink } from '@/core/routing/storefront-link';
 import { useCatalogStore } from '@/stores/modules/catalog.store';
 import { useComplexStore } from '@/stores/modules/complex.store';
 import { useTenantStore } from '@/stores/modules/tenant.store';
@@ -18,6 +20,9 @@ const router = useRouter();
 const catalogStore = useCatalogStore();
 const complexStore = useComplexStore();
 const tenantStore = useTenantStore();
+const link = useStorefrontLink();
+
+const developerSlug = computed(() => String(route.params.developer ?? ''));
 
 const COMPLEX_SCOPED_ROUTES = ['catalog', 'space-details', 'complex-landing', 'building-viz', 'floor-plan'];
 
@@ -48,13 +53,19 @@ const brandTo = computed(() => {
   const complexId = route.params.complexId;
 
   return isComplexScoped.value && complexId
-    ? { name: 'complex-landing', params: { complexId } }
-    : '/';
+    ? link({ name: 'complex-landing', params: { complexId: String(complexId) } })
+    : link({ name: 'complexes' });
 });
 
-onMounted(() => {
-  void tenantStore.loadTenant(window.location.hostname);
-});
+watch(
+  developerSlug,
+  (slug) => {
+    if (slug) {
+      void tenantStore.loadTenantBySlug(slug);
+    }
+  },
+  { immediate: true },
+);
 
 watch(
   () => route.params.complexId,
@@ -95,7 +106,7 @@ const changeSpaceType = (typeFilters: { stype: string; is_apartment?: boolean })
   }
 
   catalogStore.setFilters(nextFilters);
-  void router.push({ name: 'catalog', params: { complexId } });
+  void router.push(link({ name: 'catalog', params: { complexId: String(complexId) } }));
 };
 </script>
 
@@ -106,6 +117,7 @@ const changeSpaceType = (typeFilters: { stype: string; is_apartment?: boolean })
         :active-stype="activeStype"
         :is-apartment="isApartment"
         :show-type-tabs="showTypeTabs"
+        :filters-meta="catalogStore.filtersMeta"
         :brand-title="brandTitle"
         :brand-to="brandTo"
         :brand-logo="brandLogo"
@@ -135,6 +147,7 @@ const changeSpaceType = (typeFilters: { stype: string; is_apartment?: boolean })
   </CatalogContainer>
 
   <SideMenu />
+  <AiAssistant />
   <CallbackModal />
   <SameLayoutModal />
 </template>

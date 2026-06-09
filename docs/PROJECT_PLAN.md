@@ -173,16 +173,42 @@ OPEN: whether floor `status` is stored or derived from contained spaces
 
 ---
 
-## 6. Admin boundary (NOT built now)
+## 6. Admin boundary
 
-The admin panel is future work. For current scope we ONLY:
-- design and freeze the data contracts above (theme_config, PlanAsset,
-  PlanRegion);
-- ensure the storefront reads them from API/feed and degrades gracefully when
-  markup is missing (e.g. visual/chess show placeholder + fall back to list).
+### 6.1 Basic developers admin (DONE)
+Multi-developer support + a basic admin panel are now built:
 
-Admin responsibilities (future): configure developer theme/styles; upload and
-annotate plan images (masterplan/building/floor markup); manage feed settings.
+- **Developers in MongoDB.** New backend module `app/modules/developers`
+  (Mongo collection `developers`, seeded on startup via FastAPI `lifespan` with
+  demo `developer-1` "atlas" + `developer-2` "samolet"; `$setOnInsert` so admin
+  edits survive restarts; graceful in-memory fallback when Mongo is down).
+  Endpoints: `GET /api/developers` (admin), `GET /api/developers/by-slug/{slug}`
+  (public), `GET /api/developers/{id}` (admin), `PUT /api/developers/{id}`
+  (admin) editing basic info (name, slug, phone, logo) + `theme_config`.
+- **Admin auth.** `app/modules/admin`: `POST /api/admin/login` checks
+  `ADMIN_PASSWORD` (env, default `admin`) and returns a stateless bearer token
+  (sha256 of salt+password); `require_admin` dependency guards developer writes.
+- **Tenant resolution by slug.** `tenants` now builds the tenant from the
+  developers repo: `GET /api/tenants/by-developer/{slug}`. `DeveloperSchema`
+  moved to the developers module (tenants re-exports it).
+- **Feed extended to a second developer.** `demo_feed.py` adds complex-3/4,
+  building-3/4 and ~60 spaces for `developer-2`; `GET /api/complexes?developer=
+  slug` filters by developer (slug resolved -> developer_id).
+- **Path-based developer switching.** Storefront routes are nested under
+  `/:developer` (`/atlas/...`, `/samolet/...`); `/` redirects to the default
+  developer. `core/routing/storefront-link.ts` `useStorefrontLink()` injects the
+  active `developer` param into every named storefront link; `AppLayout` loads
+  the tenant via `tenantStore.loadTenantBySlug(route.params.developer)`.
+- **Admin SPA.** `/admin/login` (password) + `/admin` (AdminLayout, guarded by
+  `meta.requiresAdmin` + router `beforeEach`): developers list and an edit page
+  (basic info + global styles with a live theme preview). Token persisted in
+  localStorage (`useAdminStore`).
+
+### 6.2 Future admin work (NOT built)
+- Upload + annotate plan images (masterplan/building/floor markup).
+- Manage feed settings / sync.
+- Richer developer fields (domains, socials), auth hardening, per-complex theme
+  overrides.
 
 ---
 
@@ -260,10 +286,32 @@ annotate plan images (masterplan/building/floor markup); manage feed settings.
   space regions via PlanViewer; space click -> space-details). Graceful fallback.
 
 ### Epic E — Overlays
-- E1. AI assistant (start + chat + side panels).
-- E2. Side menu (finish to match figma).
-- E3. Callback request modal.
-- E4. Same-layout variants modal.
+- E1. AI assistant (start + chat). DONE — `AiAssistant.vue` left-docked panel
+  (slide-in), opened from CatalogHeader "AI-помощник" pill (uiStore.openAi).
+  Start screen (greeting + suggestion chips) + chat: user bubbles, assistant
+  replies with real complex result cards (getComplexes, top 3 by price ->
+  complex-landing) + follow-up chips; composer input + send; new-chat reset;
+  ui.store isAiOpen/openAi/closeAi. UPDATED: replies are now powered by a real
+  LLM (YandexGPT via OpenAI-compatible API) with streaming output. Backend
+  module `app/modules/ai` (router `/api/ai/chat` SSE stream, `/api/ai/history`
+  GET/DELETE) runs a function-calling loop with tools over spaces/complexes
+  (search_spaces, list_complexes, get_space_details), injects page context
+  (complex_id/name, space_id, page) into the system prompt, and persists chat
+  history in MongoDB (`ai_conversations`) keyed by an httpOnly session cookie
+  (`eva_ai_session`). Config: YANDEX_FOLDER_ID/YANDEX_API_KEY/YANDEX_MODEL.
+  Frontend `ai.api.ts` consumes the SSE stream with credentials. The secondary
+  detail/map side panel from figma is still not built.
+- E2. Side menu (finish to match figma). DONE — `SideMenu.vue` title + sales phone
+  now bound to tenant developer (developerName/salesPhone/salesPhoneHref);
+  "Обратная связь" button opens callback modal (uiStore.openCallback).
+- E3. Callback request modal. DONE — `CallbackModal.vue` (name+phone form, local
+  success state, no backend) rendered globally in AppLayout; opened from SideMenu;
+  ui.store isCallbackOpen/openCallback/closeCallback.
+- E4. Same-layout variants modal. DONE — `SameLayoutModal.vue` rendered globally;
+  opened from SpaceDetailsPage "Ещё N квартир с такой планировкой" link
+  (uiStore.openSameLayout(space)). Fetches same complex+rooms via
+  getAllCatalogSpaces, filters |area-ref|<=2, lists clickable rows -> space-details.
+  ui.store isSameLayoutOpen/sameLayoutSpace/openSameLayout/closeSameLayout.
 
 ### Epic F — Data contracts
 - F1. PlanAsset / PlanRegion schemas + demo data in feed. DONE — backend module
@@ -283,12 +331,22 @@ annotate plan images (masterplan/building/floor markup); manage feed settings.
   `var(--app-font, 'Jost', sans-serif)`. `CatalogHeader` shows developer `logo`
   (brandLogo prop) when present, else the letter mark. Demo developer theme
   primaryColor `#1f6feb` (tenants repo).
-- F3. Graceful fallbacks when markup is missing. (partial) — plan viewers and
-  visual/chess views already degrade (getPlanWithRegions null + empty states).
+- F3. Graceful fallbacks when markup is missing. DONE — `getPlanWithRegions`
+  returns null when an asset/markup is missing; `SpacesVisualView`,
+  `BuildingViewPage`, `FloorPlanPage` render empty states; `SpacesVisualView` &
+  `SpacesChessView` empty states now include a "Перейти к планировкам" CTA
+  (RouterLink -> `?view=plans`) so visual/chess fall back to the list. Theme
+  degrades to default tokens when `theme_config` is empty (applyThemeConfig
+  removes overrides). Plan viewers show a gradient placeholder when `image_url`
+  is empty.
 
 ---
 
 ## 8. Open questions / decisions log
 - Prod tenant resolution detail (subdomain vs domain table) — deferred.
-- Floor status stored vs derived — decide in F1.
+- Floor status stored vs derived — DECIDED: derive floor/aggregate status from
+  contained spaces (available if any contained space is available), with an
+  optional explicit override field for admin. Storefront currently reads
+  `PlanRegion.status` as-is (demo data sets it); the derive-vs-override logic
+  lands with the admin/feed work, contract unchanged.
 - Map provider for complex/district maps — TBD.

@@ -3,9 +3,10 @@ import { computed } from 'vue';
 
 import BaseButton from '@/components/common/BaseButton.vue';
 import BaseDropdown from '@/components/common/BaseDropdown.vue';
+import BaseIcon from '@/components/common/BaseIcon.vue';
 import RangeSlider from '@/components/common/RangeSlider.vue';
 import type { Building } from '@/core/entities/building/types';
-import type { SpaceFilters, SpaceFiltersMeta } from '@/core/entities/space/types';
+import type { NumberRange, SpaceFilters, SpaceFiltersMeta } from '@/core/entities/space/types';
 
 const props = defineProps<{
   buildings: Building[];
@@ -63,6 +64,13 @@ const deliveryStatusOptions = computed(() => (props.filtersMeta?.delivery_status
   value: status,
 })));
 
+const hasRange = (range?: NumberRange): boolean => Boolean(range) && range!.max > range!.min;
+const priceAvailable = computed(() => hasRange(props.filtersMeta?.price));
+const areaAvailable = computed(() => hasRange(props.filtersMeta?.area));
+const hasDiscountAvailable = computed(() => (
+  (props.filtersMeta?.promotions ?? []).some((value) => value.toLowerCase().includes('скидк'))
+));
+
 const isResidential = computed(() => props.filters.stype === 'flat');
 const title = computed(() => (props.filters.is_apartment ? 'Подобрать апартаменты' : 'Подобрать помещение'));
 </script>
@@ -91,7 +99,7 @@ const title = computed(() => (props.filters.is_apartment ? 'Подобрать �
       </BaseButton>
 
       <RangeSlider
-        v-if="filtersMeta"
+        v-if="filtersMeta && priceAvailable"
         label="Цена"
         unit="₽"
         :min="filtersMeta.price.min"
@@ -103,7 +111,7 @@ const title = computed(() => (props.filters.is_apartment ? 'Подобрать �
       />
 
       <RangeSlider
-        v-if="filtersMeta"
+        v-if="filtersMeta && areaAvailable"
         label="Площадь"
         unit="м²"
         :min="filtersMeta.area.min"
@@ -115,6 +123,7 @@ const title = computed(() => (props.filters.is_apartment ? 'Подобрать �
       />
 
       <BaseDropdown
+        v-if="buildingOptions.length"
         :model-value="filters.building_id ?? ''"
         :options="buildingOptions"
         placeholder="Корпус"
@@ -122,13 +131,15 @@ const title = computed(() => (props.filters.is_apartment ? 'Подобрать �
       />
 
       <BaseDropdown
+        v-if="deliveryStatusOptions.length"
         :model-value="filters.delivery_status ?? ''"
         :options="deliveryStatusOptions"
-        placeholder="Сдан"
+        placeholder="Срок сдачи"
         @change="updateFilter(filters, 'delivery_status', $event)"
       />
 
       <BaseButton
+        v-if="hasDiscountAvailable"
         :active="filters.has_discount"
         @click="toggleFilter(filters, 'has_discount', true)"
       >
@@ -142,9 +153,7 @@ const title = computed(() => (props.filters.is_apartment ? 'Подобрать �
     </div>
 
     <button type="button" class="absolute left-1/2 grid h-7 w-7 -translate-x-1/2 cursor-pointer place-items-center rounded-full border-0" :class="$style.collapseButton" aria-label="Свернуть фильтры" @click="emit('collapse')">
-      <svg class="h-1.5 w-2.5 rotate-180" viewBox="0 0 10 6" aria-hidden="true">
-        <path d="M4.625 5.025a.985.985 0 0 1-.231-.175L.107.563A.28.28 0 0 1 0 .35C-.004.267.032.188.107.113.182.037.257 0 .332 0s.15.037.225.113l4.337 4.337L9.232.113c.058-.059.129-.092.212-.1.083-.009.163.024.238.1.075.074.114.15.118.224.005.075-.031.15-.106.226L5.407 4.85a.984.984 0 0 1-.244.175 1.139 1.139 0 0 1-.538 0Z" fill="currentColor"/>
-      </svg>
+      <BaseIcon name="chevron-down" :size="12" class="rotate-180" />
     </button>
   </section>
 </template>

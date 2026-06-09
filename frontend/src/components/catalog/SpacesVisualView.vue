@@ -5,10 +5,12 @@ import { useRoute, useRouter } from 'vue-router';
 import PlanViewer from '@/components/plans/PlanViewer.vue';
 import type { PlanAsset, PlanRegion } from '@/core/entities/plan/types';
 import { getPlanWithRegions } from '@/core/entities/plan/use-cases';
+import { useStorefrontLink } from '@/core/routing/storefront-link';
 import { useCatalogStore } from '@/stores/modules/catalog.store';
 
 const route = useRoute();
 const router = useRouter();
+const link = useStorefrontLink();
 const catalogStore = useCatalogStore();
 
 const status = ref<'loading' | 'ready' | 'empty'>('loading');
@@ -51,11 +53,11 @@ const onSelect = (region: PlanRegion) => {
 
 const openBuilding = (region: PlanRegion) => {
   catalogStore.updateFilters({ building_id: region.target_id });
-  void router.push({ name: 'catalog', params: { complexId: complexId.value }, query: {} });
+  void router.push(link({ name: 'catalog', params: { complexId: complexId.value }, query: {} }));
 };
 
 const openBuildingViz = (region: PlanRegion) => {
-  void router.push({ name: 'building-viz', params: { complexId: complexId.value, buildingId: region.target_id } });
+  void router.push(link({ name: 'building-viz', params: { complexId: complexId.value, buildingId: region.target_id } }));
 };
 
 onMounted(load);
@@ -70,6 +72,7 @@ watch(complexId, load);
   <section v-else-if="status === 'empty'" :class="$style.placeholder">
     <h2 :class="$style.title">Визуальный подбор недоступен</h2>
     <p :class="$style.text">Для этого комплекса ещё не загружен генплан. Доступно {{ catalogStore.total }} квартир в режиме «Планировки».</p>
+    <RouterLink :class="$style.cta" :to="link({ name: 'catalog', params: { complexId }, query: {} })">Перейти к планировкам</RouterLink>
   </section>
 
   <section v-else :class="$style.layout">
@@ -154,6 +157,7 @@ watch(complexId, load);
   padding: 12px 24px;
   font-weight: 600;
   color: var(--color-text-inverse);
+  text-decoration: none;
   cursor: pointer;
   background: var(--color-primary);
   border: 0;

@@ -1,0 +1,31 @@
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      MONGODB_URL: mongodb://mongo:27017
+      MONGODB_DATABASE: ${MONGODB_DATABASE:-eva_2}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin}
+      YANDEX_FOLDER_ID: ${YANDEX_FOLDER_ID:-}
+      YANDEX_API_KEY: ${YANDEX_API_KEY:-}
+      YANDEX_MODEL: ${YANDEX_MODEL:-yandexgpt}
+    depends_on:
+      - mongo
+
+  web:
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  mongo_data:

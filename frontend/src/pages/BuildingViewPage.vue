@@ -5,9 +5,11 @@ import { useRoute, useRouter } from 'vue-router';
 import PlanViewer from '@/components/plans/PlanViewer.vue';
 import type { PlanAsset, PlanRegion } from '@/core/entities/plan/types';
 import { getPlanWithRegions } from '@/core/entities/plan/use-cases';
+import { useStorefrontLink } from '@/core/routing/storefront-link';
 
 const route = useRoute();
 const router = useRouter();
+const link = useStorefrontLink();
 
 const status = ref<'loading' | 'ready' | 'empty'>('loading');
 const asset = ref<PlanAsset | null>(null);
@@ -48,7 +50,7 @@ const onSelect = (region: PlanRegion) => {
 };
 
 const openFloor = (region: PlanRegion) => {
-  void router.push({ name: 'floor-plan', params: { complexId: complexId.value, floorId: region.target_id } });
+  void router.push(link({ name: 'floor-plan', params: { complexId: complexId.value, floorId: region.target_id } }));
 };
 
 onMounted(load);
@@ -58,7 +60,7 @@ watch([complexId, buildingId], load);
 <template>
   <main class="mx-auto flex w-full grow flex-col gap-6" :class="$style.page">
     <header class="flex items-center gap-4">
-      <RouterLink :class="$style.back" :to="{ name: 'catalog', params: { complexId }, query: { view: 'visual' } }">← К генплану</RouterLink>
+      <RouterLink :class="$style.back" :to="link({ name: 'catalog', params: { complexId }, query: { view: 'visual' } })">← К генплану</RouterLink>
       <h1 class="m-0 text-2xl font-semibold">Корпус</h1>
     </header>
 
@@ -66,7 +68,7 @@ watch([complexId, buildingId], load);
 
     <section v-else-if="status === 'empty'" :class="$style.state">
       <p>Для этого корпуса ещё не загружена визуализация по этажам.</p>
-      <RouterLink :class="$style.cta" :to="{ name: 'catalog', params: { complexId } }">Смотреть квартиры</RouterLink>
+      <RouterLink :class="$style.cta" :to="link({ name: 'catalog', params: { complexId } })">Смотреть квартиры</RouterLink>
     </section>
 
     <section v-else :class="$style.layout">

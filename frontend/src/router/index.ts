@@ -1,5 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
+import AdminDeveloperEditPage from '@/pages/admin/AdminDeveloperEditPage.vue';
+import AdminDevelopersPage from '@/pages/admin/AdminDevelopersPage.vue';
+import AdminLayout from '@/layouts/AdminLayout.vue';
+import AdminLoginPage from '@/pages/admin/AdminLoginPage.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import CatalogRouteHeader from '@/layouts/catalog/CatalogRouteHeader.vue';
 import CatalogRouteOverlay from '@/layouts/catalog/CatalogRouteOverlay.vue';
@@ -11,12 +15,46 @@ import ComplexLandingPage from '@/pages/ComplexLandingPage.vue';
 import FavoritesPage from '@/pages/FavoritesPage.vue';
 import FloorPlanPage from '@/pages/FloorPlanPage.vue';
 import SpaceDetailsPage from '@/pages/SpaceDetailsPage.vue';
+import UiKitPage from '@/pages/UiKitPage.vue';
+import { DEFAULT_DEVELOPER_SLUG } from '@/core/routing/storefront-link';
+import { useAdminStore } from '@/stores/modules/admin.store';
 
 export const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
+      path: '/ui-kit',
+      name: 'ui-kit',
+      component: UiKitPage,
+    },
+    {
+      path: '/admin/login',
+      name: 'admin-login',
+      component: AdminLoginPage,
+    },
+    {
+      path: '/admin',
+      component: AdminLayout,
+      meta: { requiresAdmin: true },
+      children: [
+        {
+          path: '',
+          name: 'admin-developers',
+          component: AdminDevelopersPage,
+        },
+        {
+          path: 'developers/:developerId',
+          name: 'admin-developer-edit',
+          component: AdminDeveloperEditPage,
+        },
+      ],
+    },
+    {
       path: '/',
+      redirect: { name: 'complexes', params: { developer: DEFAULT_DEVELOPER_SLUG } },
+    },
+    {
+      path: '/:developer',
       component: AppLayout,
       children: [
         {
@@ -62,4 +100,18 @@ export const router = createRouter({
       ],
     },
   ],
+});
+
+router.beforeEach((to) => {
+  if (!to.meta.requiresAdmin) {
+    return true;
+  }
+
+  const adminStore = useAdminStore();
+
+  if (!adminStore.isAuthenticated) {
+    return { name: 'admin-login', query: { redirect: to.fullPath } };
+  }
+
+  return true;
 });

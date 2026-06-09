@@ -48,7 +48,9 @@ export const getAllCatalogSpaces = async (filters: SpaceFilters = {}): Promise<S
 
 export const getSpaceDetails = (id: string): Promise<Space> => spaceRepository.getSpace(id);
 
-export const getCatalogFiltersMeta = (): Promise<SpaceFiltersMeta> => spaceRepository.getFiltersMeta();
+export const getCatalogFiltersMeta = (filters: SpaceFilters = {}): Promise<SpaceFiltersMeta> => (
+  spaceRepository.getFiltersMeta(filters)
+);
 
 export const searchSpaces = (spaces: Space[], search: string): Space[] => (
   spaces.filter((space) => createSpace(space).matchesSearch(search))

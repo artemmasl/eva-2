@@ -2,13 +2,17 @@
 import { ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
+import BaseIcon from '@/components/common/BaseIcon.vue';
+import BaseIconButton from '@/components/common/BaseIconButton.vue';
 import BaseModal from '@/components/common/BaseModal.vue';
 import type { Space } from '@/core/entities/space/types';
 import { getAllCatalogSpaces } from '@/core/entities/space/use-cases';
+import { useStorefrontLink } from '@/core/routing/storefront-link';
 import { useUiStore } from '@/stores/modules/ui.store';
 
 const uiStore = useUiStore();
 const router = useRouter();
+const link = useStorefrontLink();
 
 const isLoading = ref(false);
 const variants = ref<Space[]>([]);
@@ -48,7 +52,7 @@ watch(() => uiStore.sameLayoutSpace, (reference) => {
 
 const openSpace = (space: Space) => {
   uiStore.closeSameLayout();
-  void router.push({ name: 'space-details', params: { complexId: space.complex_id, id: space.id } });
+  void router.push(link({ name: 'space-details', params: { complexId: space.complex_id, id: space.id } }));
 };
 </script>
 
@@ -61,7 +65,9 @@ const openSpace = (space: Space) => {
   >
     <header class="flex items-center justify-between gap-4">
       <h2 id="same-layout-title" :class="$style.title">Квартиры с такой планировкой</h2>
-      <button type="button" :class="$style.close" aria-label="Закрыть" @click="uiStore.closeSameLayout()">✕</button>
+      <BaseIconButton variant="ghost" aria-label="Закрыть" @click="uiStore.closeSameLayout()">
+        <BaseIcon name="close" :size="16" />
+      </BaseIconButton>
     </header>
 
     <p v-if="isLoading" :class="$style.text">Загрузка…</p>
@@ -104,18 +110,6 @@ const openSpace = (space: Space) => {
   font-size: 22px;
   font-weight: 700;
   color: var(--color-text-primary);
-}
-
-.close {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  background: var(--color-surface-control);
-  border: 0;
-  border-radius: var(--radius-pill);
 }
 
 .text {

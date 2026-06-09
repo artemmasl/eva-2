@@ -11,6 +11,7 @@
   "dependencies": {
     "@vitejs/plugin-vue": "latest",
     "@vueuse/motion": "^2.2.6",
+    "maska": "^3.2.0",
     "pinia": "latest",
     "sass": "latest",
     "swiper": "latest",
@@ -24,6 +25,7 @@
     "@tailwindcss/postcss": "^4.3.0",
     "autoprefixer": "^10.5.0",
     "postcss": "^8.5.15",
-    "tailwindcss": "^4.3.0"
+    "tailwindcss": "^4.3.0",
+    "vite-svg-loader": "^5.1.1"
   }
 }

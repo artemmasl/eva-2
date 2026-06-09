@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 
+import BaseButton from '@/components/common/BaseButton.vue';
+import BaseIcon from '@/components/common/BaseIcon.vue';
+import BaseIconButton from '@/components/common/BaseIconButton.vue';
+import BaseInput from '@/components/common/BaseInput.vue';
 import BaseModal from '@/components/common/BaseModal.vue';
 import { useUiStore } from '@/stores/modules/ui.store';
 
@@ -39,16 +43,18 @@ const submit = () => {
     :panel-class="$style.panel"
     @close="uiStore.closeCallback()"
   >
-    <button type="button" :class="$style.close" aria-label="Закрыть" @click="uiStore.closeCallback()">✕</button>
+    <BaseIconButton class="absolute right-[18px] top-[18px]" variant="ghost" aria-label="Закрыть" @click="uiStore.closeCallback()">
+      <BaseIcon name="close" :size="16" />
+    </BaseIconButton>
 
     <template v-if="!isSubmitted">
       <h2 id="callback-title" :class="$style.title">Обратная связь</h2>
       <p :class="$style.text">Оставьте номер — менеджер перезвонит и ответит на вопросы.</p>
 
       <form class="flex flex-col gap-3" @submit.prevent="submit">
-        <input v-model="name" type="text" :class="$style.input" placeholder="Ваше имя" />
-        <input v-model="phone" type="tel" :class="$style.input" placeholder="Телефон" required />
-        <button type="submit" :class="$style.cta">Жду звонка</button>
+        <BaseInput v-model="name" type="text" size="lg" placeholder="Ваше имя" />
+        <BaseInput v-model="phone" type="tel" size="lg" mask="+7 (###) ###-##-##" placeholder="+7 (___) ___-__-__" />
+        <BaseButton type="submit" active size="lg" class="w-full">Жду звонка</BaseButton>
       </form>
 
       <p :class="$style.fine">Нажимая кнопку, вы соглашаетесь на обработку персональных данных.</p>
@@ -57,7 +63,7 @@ const submit = () => {
     <template v-else>
       <h2 id="callback-title" :class="$style.title">Заявка отправлена</h2>
       <p :class="$style.text">Спасибо! Мы свяжемся с вами в ближайшее время.</p>
-      <button type="button" :class="$style.cta" @click="uiStore.closeCallback()">Закрыть</button>
+      <BaseButton active size="lg" class="w-full" @click="uiStore.closeCallback()">Закрыть</BaseButton>
     </template>
   </BaseModal>
 </template>
@@ -81,21 +87,6 @@ const submit = () => {
   }
 }
 
-.close {
-  position: absolute;
-  top: 18px;
-  right: 18px;
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  background: var(--color-surface-control);
-  border: 0;
-  border-radius: var(--radius-pill);
-}
-
 .title {
   margin: 0;
   font-size: 24px;
@@ -106,31 +97,6 @@ const submit = () => {
 .text {
   margin: 0;
   color: var(--color-text-secondary);
-}
-
-.input {
-  height: 48px;
-  padding: 0 18px;
-  font-size: 15px;
-  color: var(--color-text-primary);
-  background: var(--color-surface-control);
-  border: 1px solid transparent;
-  border-radius: var(--radius-control);
-  outline: none;
-
-  &:focus {
-    border-color: var(--color-primary);
-  }
-}
-
-.cta {
-  height: 48px;
-  font-weight: 600;
-  color: var(--color-text-inverse);
-  cursor: pointer;
-  background: var(--color-primary);
-  border: 0;
-  border-radius: var(--radius-pill);
 }
 
 .fine {

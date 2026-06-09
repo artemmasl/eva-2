@@ -88,6 +88,28 @@ TEST_FEED_COMPLEXES: list[FeedComplex] = [
         "delivery_status": "Сдан",
         "coordinates": {"lat": 55.7612, "lng": 37.6241},
     },
+    {
+        "id": "complex-3",
+        "developer_id": "developer-2",
+        "name": "ЖК Самолёт Прайм",
+        "address": "Южный бульвар, 14",
+        "district": "Речной квартал",
+        "metro": "Метро Технопарк",
+        "metro_time": "8 мин. пешком",
+        "delivery_status": "Строится",
+        "coordinates": {"lat": 55.7041, "lng": 37.6562},
+    },
+    {
+        "id": "complex-4",
+        "developer_id": "developer-2",
+        "name": "Жулебино Парк",
+        "address": "Лермонтовский проспект, 3",
+        "district": "Зелёный массив",
+        "metro": "Метро Жулебино",
+        "metro_time": "5 мин. пешком",
+        "delivery_status": "Сдан",
+        "coordinates": {"lat": 55.6889, "lng": 37.8534},
+    },
 ]
 
 TEST_FEED_BUILDINGS: list[FeedBuilding] = [
@@ -112,6 +134,28 @@ TEST_FEED_BUILDINGS: list[FeedBuilding] = [
         "metro": "Метро Ботаническая",
         "metro_time": "12 мин. пешком",
         "coordinates": {"lat": 55.7612, "lng": 37.6241},
+    },
+    {
+        "id": "building-3",
+        "complex_id": "complex-3",
+        "developer_id": "developer-2",
+        "name": "Корпус А",
+        "address": "Южный бульвар, 14",
+        "district": "Речной квартал",
+        "metro": "Метро Технопарк",
+        "metro_time": "8 мин. пешком",
+        "coordinates": {"lat": 55.7041, "lng": 37.6562},
+    },
+    {
+        "id": "building-4",
+        "complex_id": "complex-4",
+        "developer_id": "developer-2",
+        "name": "Корпус 1",
+        "address": "Лермонтовский проспект, 3",
+        "district": "Зелёный массив",
+        "metro": "Метро Жулебино",
+        "metro_time": "5 мин. пешком",
+        "coordinates": {"lat": 55.6889, "lng": 37.8534},
     },
 ]
 
@@ -142,7 +186,7 @@ ROOM_AREA_MAP = {
 }
 
 
-def build_feed_space(index: int) -> FeedSpace:
+def build_feed_space(index: int, building_id: str) -> FeedSpace:
     stype = SPACE_TYPE_OPTIONS[index % len(SPACE_TYPE_OPTIONS)]
     is_apartment = stype == "flat" and index % 8 == 0
     rooms = [1, 2, 3, 4][index % 4] if stype == "flat" else 0
@@ -194,7 +238,7 @@ def build_feed_space(index: int) -> FeedSpace:
 
     return {
         "id": f"space-{index + 1}",
-        "building_id": "building-1" if index % 2 == 0 else "building-2",
+        "building_id": building_id,
         "stype": stype,
         "is_apartment": is_apartment,
         "rooms": rooms,
@@ -226,7 +270,30 @@ def build_feed_space(index: int) -> FeedSpace:
     }
 
 
-TEST_FEED_SPACES: list[FeedSpace] = [build_feed_space(index) for index in range(95)]
+def _generate_feed_spaces() -> list[FeedSpace]:
+    """Generate demo spaces across all buildings.
+
+    developer-1 keeps its original 95 spaces (space-1..95) split between
+    building-1/building-2 so existing demo data and plan regions stay valid;
+    developer-2 gets a fresh batch split between building-3/building-4.
+    """
+    spaces: list[FeedSpace] = []
+    index = 0
+
+    for _ in range(95):
+        building_id = "building-1" if index % 2 == 0 else "building-2"
+        spaces.append(build_feed_space(index, building_id))
+        index += 1
+
+    for _ in range(60):
+        building_id = "building-3" if index % 2 == 0 else "building-4"
+        spaces.append(build_feed_space(index, building_id))
+        index += 1
+
+    return spaces
+
+
+TEST_FEED_SPACES: list[FeedSpace] = _generate_feed_spaces()
 
 
 async def get_feed_complexes() -> list[FeedComplex]:

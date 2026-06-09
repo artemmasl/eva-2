@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 
+import { isSpaceTypeAvailable } from '@/core/catalog/space-types';
 import { getBuildings } from '@/core/entities/building/use-cases';
 import type { Building } from '@/core/entities/building/types';
 import { getCatalogFiltersMeta, getCatalogSpaces, searchSpaces } from '@/core/entities/space/use-cases';
@@ -17,6 +18,13 @@ export const useCatalogStore = defineStore('catalog', () => {
     'layout_feature',
     'exclude_first_floor',
     'exclude_last_floor',
+  ];
+  const spaceTypePresets: SpaceFilters[] = [
+    { stype: 'flat', is_apartment: false },
+    { stype: 'flat', is_apartment: true },
+    { stype: 'parking' },
+    { stype: 'storage' },
+    { stype: 'commercial' },
   ];
   const pageSize = 24;
   const filterUpdateDelay = 350;
@@ -44,6 +52,27 @@ export const useCatalogStore = defineStore('catalog', () => {
     complexId.value = nextComplexId;
   };
 
+  const metaFilters = (): SpaceFilters => (
+    complexId.value ? { complex_id: complexId.value } : {}
+  );
+
+  const resolveAvailableFilters = (meta: SpaceFiltersMeta | null, current: SpaceFilters): SpaceFilters => {
+    if (isSpaceTypeAvailable(meta, current.stype ?? 'flat', current.is_apartment)) {
+      return current;
+    }
+
+    const fallback = spaceTypePresets.find((preset) => (
+      isSpaceTypeAvailable(meta, preset.stype ?? 'flat', preset.is_apartment)
+    ));
+
+    return fallback ? { ...fallback } : current;
+  };
+
+  const loadFiltersMeta = async (nextComplexId: string | null) => {
+    complexId.value = nextComplexId;
+    filtersMeta.value = await getCatalogFiltersMeta(metaFilters());
+  };
+
   const loadSpaces = async () => {
     const currentRequestId = ++requestId;
 
@@ -69,11 +98,12 @@ export const useCatalogStore = defineStore('catalog', () => {
   const loadCatalog = async () => {
     const [buildingsResult, filtersMetaResult] = await Promise.all([
       getBuildings(),
-      getCatalogFiltersMeta(),
+      getCatalogFiltersMeta(metaFilters()),
     ]);
 
     buildings.value = buildingsResult;
     filtersMeta.value = filtersMetaResult;
+    filters.value = resolveAvailableFilters(filtersMetaResult, filters.value);
 
     await loadSpaces();
   };
@@ -163,6 +193,7 @@ export const useCatalogStore = defineStore('catalog', () => {
     hasMore,
     visibleSpaces,
     loadCatalog,
+    loadFiltersMeta,
     loadMoreSpaces,
     setFilters,
     updateFilters,

@@ -3,12 +3,15 @@ import { computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import ComplexesMap from '@/components/complexes/ComplexesMap.vue';
+import { isSpaceTypeAvailable } from '@/core/catalog/space-types';
 import type { ComplexSummary, RoomGroupStat } from '@/core/entities/complex/types';
+import { useStorefrontLink } from '@/core/routing/storefront-link';
 import { useCatalogStore } from '@/stores/modules/catalog.store';
 import { useComplexStore } from '@/stores/modules/complex.store';
 
 const route = useRoute();
 const router = useRouter();
+const link = useStorefrontLink();
 const catalogStore = useCatalogStore();
 const complexStore = useComplexStore();
 
@@ -82,6 +85,12 @@ const spaceTypeTabs: { label: string; filters: TypeFilters }[] = [
   { label: 'Коммерция', filters: { stype: 'commercial' } },
 ];
 
+const visibleSpaceTypeTabs = computed(() => (
+  spaceTypeTabs.filter((tab) => (
+    isSpaceTypeAvailable(catalogStore.filtersMeta, tab.filters.stype, tab.filters.is_apartment)
+  ))
+));
+
 const PLAN_ROOMS: Record<string, number> = {
   studio: 0,
   one: 1,
@@ -96,7 +105,7 @@ const goToCatalog = (filters: TypeFilters) => {
   }
 
   catalogStore.setFilters({ ...filters });
-  void router.push({ name: 'catalog', params: { complexId: complex.value.id } });
+  void router.push(link({ name: 'catalog', params: { complexId: complex.value.id } }));
 };
 
 const openPlanGroup = (group: RoomGroupStat) => {
@@ -113,6 +122,7 @@ const infrastructure = [
 const loadCurrent = (complexId: unknown) => {
   if (complexId) {
     void complexStore.loadComplex(String(complexId));
+    void catalogStore.loadFiltersMeta(String(complexId));
   }
 };
 
@@ -150,7 +160,7 @@ watch(() => route.params.complexId, loadCurrent);
 
       <nav :class="$style.tabs">
         <button
-          v-for="tab in spaceTypeTabs"
+          v-for="tab in visibleSpaceTypeTabs"
           :key="tab.label"
           type="button"
           :class="$style.tab"
@@ -170,7 +180,7 @@ watch(() => route.params.complexId, loadCurrent);
 
         <RouterLink
           :class="$style.cta"
-          :to="{ name: 'catalog', params: { complexId: complex.id } }"
+          :to="link({ name: 'catalog', params: { complexId: complex.id } })"
         >
           Смотреть квартиры
         </RouterLink>

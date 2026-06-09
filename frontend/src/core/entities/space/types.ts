@@ -84,6 +84,8 @@ export interface NumberRange {
 
 export interface SpaceFiltersMeta {
   stypes: string[];
+  has_flats: boolean;
+  has_apartments: boolean;
   price: NumberRange;
   area: NumberRange;
   floor: NumberRange;

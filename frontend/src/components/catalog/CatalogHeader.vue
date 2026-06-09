@@ -2,6 +2,10 @@
 import { computed } from 'vue';
 import type { RouteLocationRaw } from 'vue-router';
 
+import BaseIcon from '@/components/common/BaseIcon.vue';
+import { isSpaceTypeAvailable } from '@/core/catalog/space-types';
+import type { SpaceFiltersMeta } from '@/core/entities/space/types';
+import { useStorefrontLink } from '@/core/routing/storefront-link';
 import { useFavoritesStore } from '@/stores/modules/favorites.store';
 import { useUiStore } from '@/stores/modules/ui.store';
 
@@ -9,12 +13,14 @@ const props = withDefaults(defineProps<{
   activeStype?: string;
   isApartment?: boolean;
   showTypeTabs?: boolean;
+  filtersMeta?: SpaceFiltersMeta | null;
   brandTitle?: string;
   brandTo?: RouteLocationRaw;
   brandLogo?: string;
   phone?: string;
 }>(), {
   showTypeTabs: true,
+  filtersMeta: null,
   brandTitle: '',
   brandTo: '/',
   brandLogo: '',
@@ -31,6 +37,9 @@ const emit = defineEmits<{
 
 const uiStore = useUiStore();
 const favoritesStore = useFavoritesStore();
+const link = useStorefrontLink();
+
+const favoritesTo = computed(() => link({ name: 'favorites' }));
 
 const spaceTypeOptions = [
   { label: 'Квартиры', value: 'flat', filters: { stype: 'flat', is_apartment: false } },
@@ -39,6 +48,12 @@ const spaceTypeOptions = [
   { label: 'Коммерция', value: 'commercial', filters: { stype: 'commercial' } },
   { label: 'Апартаменты', value: 'apartment', filters: { stype: 'flat', is_apartment: true } },
 ];
+
+const visibleSpaceTypeOptions = computed(() => (
+  spaceTypeOptions.filter((option) => (
+    isSpaceTypeAvailable(props.filtersMeta, option.filters.stype, option.filters.is_apartment)
+  ))
+));
 
 const isOptionActive = (option: { value: string; filters: { stype: string; is_apartment?: boolean } }) => (
   option.value === 'apartment'
@@ -63,7 +78,7 @@ const isOptionActive = (option: { value: string; filters: { stype: string; is_ap
 
       <nav v-if="props.showTypeTabs" class="flex justify-center gap-2" :class="$style.nav" aria-label="Catalog navigation">
         <button
-          v-for="option in spaceTypeOptions"
+          v-for="option in visibleSpaceTypeOptions"
           :key="option.value"
           type="button"
           :class="isOptionActive(option) && $style.navLinkActive"
@@ -73,16 +88,14 @@ const isOptionActive = (option: { value: string; filters: { stype: string; is_ap
         </button>
       </nav>
 
-      <div class="flex items-center gap-2.5">
+      <div class="flex items-center gap-2.5 ml-auto">
         <a v-if="props.phone" class="whitespace-nowrap text-sm no-underline max-md:hidden" :class="$style.phoneLink" :href="phoneHref">{{ props.phone }}</a>
-        <button class="inline-flex h-9 cursor-pointer items-center gap-2 rounded-full border-0 px-5 max-md:hidden" :class="$style.aiButton" type="button">
+        <button class="inline-flex h-9 cursor-pointer items-center gap-2 rounded-full border-0 px-5 max-md:hidden" :class="$style.aiButton" type="button" @click="uiStore.openAi()">
           <span :class="$style.aiSpark" aria-hidden="true">✦</span>
           AI-помощник
         </button>
-        <RouterLink class="relative grid h-9 w-9 place-items-center rounded-full border-0 no-underline" :class="$style.iconButton" to="/favorites" aria-label="Избранное">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 20s-7-4.35-9.33-8.3C1.3 9.36 2.2 6.4 5 5.6c1.96-.56 3.7.5 4.6 1.7L12 9l2.4-1.7c.9-1.2 2.64-2.26 4.6-1.7 2.8.8 3.7 3.76 2.33 6.1C19 15.65 12 20 12 20z" />
-          </svg>
+        <RouterLink class="relative grid h-9 w-9 place-items-center rounded-full border-0 no-underline" :class="$style.iconButton" :to="favoritesTo" aria-label="Избранное">
+          <BaseIcon name="heart" :size="18" />
           <span v-if="favoritesStore.totalCount > 0" class="absolute -right-1 -top-1 grid h-[18px] min-w-[18px] place-items-center rounded-full px-1 text-[11px]" :class="$style.favoriteBadge">{{ favoritesStore.totalCount }}</span>
         </RouterLink>
       </div>

@@ -72,14 +72,19 @@ async def get_space(space_id: str) -> SpaceSchema | None:
 
 
 def unique_sorted(values: list[str]) -> list[str]:
-    return sorted(set(values))
+    return sorted({value for value in values if value and value.strip()})
 
 
-async def get_space_filters_meta() -> SpaceFiltersMetaSchema:
+async def get_space_filters_meta(complex_id: str | None = None) -> SpaceFiltersMetaSchema:
     spaces = await get_spaces()
+
+    if complex_id is not None:
+        spaces = [space for space in spaces if space.complex_id == complex_id]
 
     return SpaceFiltersMetaSchema(
         stypes=unique_sorted([space.stype for space in spaces]),
+        has_flats=any(space.stype == "flat" and not space.is_apartment for space in spaces),
+        has_apartments=any(space.stype == "flat" and space.is_apartment for space in spaces),
         price=NumberRangeSchema(
             min=min(space.price.amount for space in spaces),
             max=max(space.price.amount for space in spaces),

@@ -99,8 +99,8 @@ async def list_spaces(
 
 
 @router.get("/filters", response_model=SpaceFiltersMetaSchema)
-async def retrieve_space_filters() -> SpaceFiltersMetaSchema:
-    return await get_space_filters_meta()
+async def retrieve_space_filters(complex_id: str | None = None) -> SpaceFiltersMetaSchema:
+    return await get_space_filters_meta(complex_id)
 
 
 @router.get("/{space_id}", response_model=SpaceSchema)

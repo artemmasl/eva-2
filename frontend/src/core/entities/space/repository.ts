@@ -12,6 +12,6 @@ export const spaceRepository = {
     filters: SpaceFilters = {},
     pagination: SpacePagination = {},
   ): Promise<SpacesPage> => spacesApi.getSpaces(filters, pagination),
-  getFiltersMeta: (): Promise<SpaceFiltersMeta> => spacesApi.getFiltersMeta(),
+  getFiltersMeta: (filters: SpaceFilters = {}): Promise<SpaceFiltersMeta> => spacesApi.getFiltersMeta(filters),
   getSpace: (id: string): Promise<Space> => spacesApi.getSpace(id),
 };
