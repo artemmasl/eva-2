@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 import AdminDeveloperEditPage from '@/pages/admin/AdminDeveloperEditPage.vue';
 import AdminDevelopersPage from '@/pages/admin/AdminDevelopersPage.vue';
+import AdminLeadsPage from '@/pages/admin/AdminLeadsPage.vue';
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import AdminLoginPage from '@/pages/admin/AdminLoginPage.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -14,6 +15,7 @@ import ComplexesPage from '@/pages/ComplexesPage.vue';
 import ComplexLandingPage from '@/pages/ComplexLandingPage.vue';
 import FavoritesPage from '@/pages/FavoritesPage.vue';
 import FloorPlanPage from '@/pages/FloorPlanPage.vue';
+import PrivacyPolicyPage from '@/pages/PrivacyPolicyPage.vue';
 import SpaceDetailsPage from '@/pages/SpaceDetailsPage.vue';
 import UiKitPage from '@/pages/UiKitPage.vue';
 import { DEFAULT_DEVELOPER_SLUG } from '@/core/routing/storefront-link';
@@ -47,6 +49,11 @@ export const router = createRouter({
           name: 'admin-developer-edit',
           component: AdminDeveloperEditPage,
         },
+        {
+          path: 'leads',
+          name: 'admin-leads',
+          component: AdminLeadsPage,
+        },
       ],
     },
     {
@@ -66,6 +73,11 @@ export const router = createRouter({
           path: 'favorites',
           name: 'favorites',
           component: FavoritesPage,
+        },
+        {
+          path: 'privacy',
+          name: 'privacy',
+          component: PrivacyPolicyPage,
         },
         {
           path: 'complex/:complexId',

@@ -1,5 +1,6 @@
 import { apiClient } from '@/core/api/client';
-import type { Developer } from '@/core/entities/developer/types';
+import type { Developer, SocialLinks } from '@/core/entities/developer/types';
+import type { Lead } from '@/core/entities/lead/types';
 import type { ThemeConfig } from '@/core/entities/theme-config/types';
 
 export interface DeveloperUpdate {
@@ -7,6 +8,10 @@ export interface DeveloperUpdate {
   slug: string;
   logo: string;
   phone: string;
+  email: string;
+  website: string;
+  socials: SocialLinks;
+  privacy_policy: string;
   theme_config: ThemeConfig;
 }
 
@@ -31,4 +36,7 @@ export const adminApi = {
       body: JSON.stringify(payload),
     },
   ),
+  listLeads: (token: string) => apiClient<Lead[]>('/api/leads', {
+    headers: authHeaders(token),
+  }),
 };

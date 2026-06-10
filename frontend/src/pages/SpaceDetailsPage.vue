@@ -265,8 +265,49 @@ const activeViewLabel = computed(() => (
   viewTabs.find((tab) => tab.id === activeView.value)?.label ?? ''
 ));
 
-const notify = (message: string) => {
-  window.alert(message);
+const requestLead = (kind: 'consultation' | 'booking' | 'conditions', title: string, description: string) => {
+  uiStore.openCallback({
+    kind,
+    title,
+    description,
+    spaceId: space.value?.id ?? null,
+    complexId: space.value?.complex_id ?? null,
+  });
+};
+
+const shareMessage = ref('');
+let shareMessageTimer: ReturnType<typeof setTimeout> | undefined;
+
+const showShareMessage = (text: string) => {
+  shareMessage.value = text;
+
+  if (shareMessageTimer) {
+    clearTimeout(shareMessageTimer);
+  }
+
+  shareMessageTimer = setTimeout(() => {
+    shareMessage.value = '';
+  }, 2400);
+};
+
+const shareSpace = async () => {
+  const url = window.location.href;
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: title.value || document.title, url });
+      return;
+    } catch {
+      // user cancelled or share failed — fall back to clipboard
+    }
+  }
+
+  try {
+    await navigator.clipboard.writeText(url);
+    showShareMessage('Ссылка скопирована');
+  } catch {
+    showShareMessage(url);
+  }
 };
 </script>
 
@@ -330,14 +371,13 @@ const notify = (message: string) => {
               <button type="button" :aria-label="isFavorite ? 'Убрать из избранного' : 'В избранное'" :aria-pressed="isFavorite" :class="isFavorite && $style.iconActive" @click="toggleFavorite">
                 <BaseIcon :name="isFavorite ? 'heart-filled' : 'heart'" :size="18" />
               </button>
-              <button type="button" aria-label="Поделиться">
+              <button type="button" aria-label="Поделиться" @click="shareSpace">
                 <BaseIcon name="share" :size="18" />
-              </button>
-              <button type="button" aria-label="Скачать PDF">
-                <BaseIcon name="file" :size="18" />
               </button>
             </div>
           </div>
+
+          <p v-if="shareMessage" :class="$style.shareMessage">{{ shareMessage }}</p>
 
           <div v-if="space.badges.length" :class="$style.badges">
             <BaseBadge
@@ -371,7 +411,7 @@ const notify = (message: string) => {
                 v-if="condition.action"
                 type="button"
                 :class="$style.conditionButton"
-                @click="notify('Подбор условий покупки')"
+                @click="requestLead('conditions', 'Подбор условий покупки', 'Оставьте номер — менеджер подберёт условия покупки по этому помещению.')"
               >Выбрать условия</button>
             </div>
           </div>
@@ -398,12 +438,12 @@ const notify = (message: string) => {
             v-if="activeView !== 'map'"
             type="button"
             :class="$style.ctaGhost"
-            @click="notify('Заявка на консультацию отправлена')"
+            @click="requestLead('consultation', 'Получить консультацию', 'Оставьте номер — менеджер ответит на вопросы по этому помещению.')"
           >Получить консультацию</button>
           <button
             type="button"
             :class="$style.ctaPrimary"
-            @click="notify('Бронирование оформлено')"
+            @click="requestLead('booking', 'Забронировать помещение', 'Оставьте номер — менеджер свяжется с вами для оформления брони.')"
           >Забронировать</button>
         </div>
       </aside>
@@ -670,6 +710,12 @@ const notify = (message: string) => {
 
 .iconActive {
   color: var(--color-primary) !important;
+}
+
+.shareMessage {
+  margin: -4px 0 0;
+  font-size: 13px;
+  color: var(--color-primary);
 }
 
 .badges {

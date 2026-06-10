@@ -19,6 +19,20 @@ const developer = computed(() => tenantStore.tenant?.developer ?? null);
 const developerName = computed(() => developer.value?.name ?? 'Строительная компания');
 const salesPhone = computed(() => developer.value?.phone ?? '+7 (343) 364-56-59');
 const salesPhoneHref = computed(() => `tel:${salesPhone.value.replace(/[^\d+]/g, '')}`);
+
+const socialLinks = computed(() => {
+  const socials = developer.value?.socials;
+
+  if (!socials) {
+    return [];
+  }
+
+  return [
+    { label: 'VK', aria: 'ВКонтакте', href: socials.vk },
+    { label: 'OK', aria: 'Одноклассники', href: socials.ok },
+    { label: 'TG', aria: 'Telegram', href: socials.telegram },
+  ].filter((item) => Boolean(item.href));
+});
 </script>
 
 <template>
@@ -84,10 +98,15 @@ const salesPhoneHref = computed(() => `tel:${salesPhone.value.replace(/[^\d+]/g,
           Обратная связь
         </button>
 
-        <nav class="mt-1 flex items-center gap-4" :class="$style.socials" aria-label="Социальные сети">
-          <a href="#" aria-label="ВКонтакте">VK</a>
-          <a href="#" aria-label="Одноклассники">OK</a>
-          <a href="#" aria-label="Telegram">TG</a>
+        <nav v-if="socialLinks.length" class="mt-1 flex items-center gap-4" :class="$style.socials" aria-label="Социальные сети">
+          <a
+            v-for="social in socialLinks"
+            :key="social.label"
+            :href="social.href"
+            :aria-label="social.aria"
+            target="_blank"
+            rel="noopener"
+          >{{ social.label }}</a>
         </nav>
       </aside>
     </div>

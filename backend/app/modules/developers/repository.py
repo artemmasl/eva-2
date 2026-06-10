@@ -3,7 +3,7 @@ import logging
 from pymongo.errors import PyMongoError
 
 from app.database import database
-from app.modules.developers.schemas import DeveloperSchema, DeveloperUpdateSchema
+from app.modules.developers.schemas import DeveloperSchema, DeveloperUpdateSchema, SocialLinksSchema
 from app.modules.theme.schemas import ThemeConfigSchema
 
 logger = logging.getLogger(__name__)
@@ -18,6 +18,14 @@ DEMO_DEVELOPERS: list[DeveloperSchema] = [
         slug="atlas",
         logo="",
         phone="+7 (343) 364-56-59",
+        email="help@atlas.com",
+        website="https://atlas.com",
+        socials=SocialLinksSchema(
+            vk="https://vk.com/atlas",
+            ok="https://ok.ru/atlas",
+            telegram="https://t.me/atlas",
+        ),
+        privacy_policy="",
         domains=["localhost"],
         theme_config=ThemeConfigSchema(
             primaryColor="#1f6feb",
@@ -32,6 +40,14 @@ DEMO_DEVELOPERS: list[DeveloperSchema] = [
         slug="samolet",
         logo="",
         phone="+7 (495) 215-15-15",
+        email="info@samolet.ru",
+        website="https://samolet.ru",
+        socials=SocialLinksSchema(
+            vk="https://vk.com/samolet",
+            ok="https://ok.ru/samolet",
+            telegram="https://t.me/samolet",
+        ),
+        privacy_policy="",
         domains=["localhost"],
         theme_config=ThemeConfigSchema(
             primaryColor="#e11b4d",

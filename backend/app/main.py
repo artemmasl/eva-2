@@ -11,6 +11,7 @@ from app.modules.complexes.router import router as complexes_router
 from app.modules.developers.repository import seed_developers
 from app.modules.developers.router import router as developers_router
 from app.modules.feed.router import router as feed_router
+from app.modules.leads.router import router as leads_router
 from app.modules.plans.router import router as plans_router
 from app.modules.spaces.router import router as spaces_router
 from app.modules.tenants.router import router as tenants_router
@@ -47,5 +48,6 @@ app.include_router(buildings_router)
 app.include_router(spaces_router)
 app.include_router(plans_router)
 app.include_router(theme_router)
+app.include_router(leads_router)
 app.include_router(feed_router)
 app.include_router(ai_router)

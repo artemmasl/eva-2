@@ -5,6 +5,7 @@ import { useRoute } from 'vue-router';
 import BaseButton from '@/components/common/BaseButton.vue';
 import BaseField from '@/components/common/BaseField.vue';
 import BaseInput from '@/components/common/BaseInput.vue';
+import BaseTextarea from '@/components/common/BaseTextarea.vue';
 import { adminApi, type DeveloperUpdate } from '@/core/api/admin.api';
 import type { Developer } from '@/core/entities/developer/types';
 import { useAdminStore } from '@/stores/modules/admin.store';
@@ -33,6 +34,14 @@ const form = reactive<DeveloperUpdate>({
   slug: '',
   logo: '',
   phone: '',
+  email: '',
+  website: '',
+  socials: {
+    vk: '',
+    ok: '',
+    telegram: '',
+  },
+  privacy_policy: '',
   theme_config: {
     primaryColor: '#1f6feb',
     logo: '',
@@ -46,6 +55,10 @@ const applyToForm = (data: Developer) => {
   form.slug = data.slug;
   form.logo = data.logo;
   form.phone = data.phone;
+  form.email = data.email;
+  form.website = data.website;
+  form.socials = { ...data.socials };
+  form.privacy_policy = data.privacy_policy;
   form.theme_config = { ...data.theme_config };
 };
 
@@ -80,6 +93,10 @@ const save = async () => {
       slug: form.slug,
       logo: form.logo,
       phone: form.phone,
+      email: form.email,
+      website: form.website,
+      socials: { ...form.socials },
+      privacy_policy: form.privacy_policy,
       theme_config: { ...form.theme_config },
     });
 
@@ -139,8 +156,40 @@ const previewStyle = computed(() => ({
               <BaseInput id="dev-phone" v-model="form.phone" tone="surface" placeholder="+7 (___) ___-__-__" />
             </BaseField>
 
+            <BaseField label="Email" html-for="dev-email">
+              <BaseInput id="dev-email" v-model="form.email" tone="surface" type="email" placeholder="help@example.com" />
+            </BaseField>
+
+            <BaseField label="Сайт (URL)" html-for="dev-website">
+              <BaseInput id="dev-website" v-model="form.website" tone="surface" placeholder="https://…" />
+            </BaseField>
+
             <BaseField label="Логотип (URL)" hint="Ссылка на изображение логотипа" html-for="dev-logo">
               <BaseInput id="dev-logo" v-model="form.logo" tone="surface" placeholder="https://…" />
+            </BaseField>
+          </div>
+
+          <div class="flex flex-col gap-5 rounded-card bg-surface p-6 shadow-card">
+            <h2 class="m-0 text-base font-semibold text-text-primary">Соцсети</h2>
+
+            <BaseField label="ВКонтакте" html-for="dev-vk">
+              <BaseInput id="dev-vk" v-model="form.socials.vk" tone="surface" placeholder="https://vk.com/…" />
+            </BaseField>
+
+            <BaseField label="Одноклассники" html-for="dev-ok">
+              <BaseInput id="dev-ok" v-model="form.socials.ok" tone="surface" placeholder="https://ok.ru/…" />
+            </BaseField>
+
+            <BaseField label="Telegram" html-for="dev-tg">
+              <BaseInput id="dev-tg" v-model="form.socials.telegram" tone="surface" placeholder="https://t.me/…" />
+            </BaseField>
+          </div>
+
+          <div class="flex flex-col gap-5 rounded-card bg-surface p-6 shadow-card">
+            <h2 class="m-0 text-base font-semibold text-text-primary">Политика конфиденциальности</h2>
+
+            <BaseField label="Текст политики" hint="Отображается на отдельной странице витрины" html-for="dev-privacy">
+              <BaseTextarea id="dev-privacy" v-model="form.privacy_policy" :rows="10" placeholder="Текст политики конфиденциальности…" />
             </BaseField>
           </div>
 

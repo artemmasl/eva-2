@@ -17,10 +17,33 @@ const logout = () => {
   <div class="min-h-screen bg-surface-control text-text-primary">
     <header class="border-b border-border bg-surface">
       <div class="mx-auto flex h-16 w-full max-w-[1100px] items-center justify-between px-6">
-        <RouterLink :to="{ name: 'admin-developers' }" class="flex items-center gap-2 no-underline">
-          <span class="grid h-9 w-9 place-items-center rounded-control bg-primary text-text-inverse font-bold">A</span>
-          <span class="text-base font-semibold text-text-primary">EVA Admin</span>
-        </RouterLink>
+        <div class="flex items-center gap-6">
+          <RouterLink :to="{ name: 'admin-developers' }" class="flex items-center gap-2 no-underline">
+            <span class="grid h-9 w-9 place-items-center rounded-control bg-primary text-text-inverse font-bold">A</span>
+            <span class="text-base font-semibold text-text-primary">EVA Admin</span>
+          </RouterLink>
+
+          <nav class="flex items-center gap-1">
+            <RouterLink
+              :to="{ name: 'admin-developers' }"
+              class="rounded-control px-3 py-2 text-sm no-underline"
+              :class="$route.name === 'admin-developers' || $route.name === 'admin-developer-edit'
+                ? 'bg-surface-control font-semibold text-text-primary'
+                : 'text-text-secondary hover:text-text-primary'"
+            >
+              Застройщики
+            </RouterLink>
+            <RouterLink
+              :to="{ name: 'admin-leads' }"
+              class="rounded-control px-3 py-2 text-sm no-underline"
+              :class="$route.name === 'admin-leads'
+                ? 'bg-surface-control font-semibold text-text-primary'
+                : 'text-text-secondary hover:text-text-primary'"
+            >
+              Заявки
+            </RouterLink>
+          </nav>
+        </div>
 
         <BaseButton tone="outline" size="md" @click="logout">Выйти</BaseButton>
       </div>

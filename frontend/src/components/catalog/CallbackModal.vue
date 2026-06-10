@@ -1,23 +1,32 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import BaseButton from '@/components/common/BaseButton.vue';
 import BaseIcon from '@/components/common/BaseIcon.vue';
 import BaseIconButton from '@/components/common/BaseIconButton.vue';
 import BaseInput from '@/components/common/BaseInput.vue';
 import BaseModal from '@/components/common/BaseModal.vue';
+import { leadsApi } from '@/core/api/leads.api';
+import { useTenantStore } from '@/stores/modules/tenant.store';
 import { useUiStore } from '@/stores/modules/ui.store';
 
 const uiStore = useUiStore();
+const tenantStore = useTenantStore();
 
 const name = ref('');
 const phone = ref('');
 const isSubmitted = ref(false);
+const isSubmitting = ref(false);
+const errorText = ref('');
+
+const context = computed(() => uiStore.callbackContext);
 
 const reset = () => {
   name.value = '';
   phone.value = '';
   isSubmitted.value = false;
+  isSubmitting.value = false;
+  errorText.value = '';
 };
 
 watch(() => uiStore.isCallbackOpen, (open) => {
@@ -26,13 +35,31 @@ watch(() => uiStore.isCallbackOpen, (open) => {
   }
 });
 
-const submit = () => {
-  if (!phone.value.trim()) {
+const submit = async () => {
+  if (!phone.value.trim() || isSubmitting.value) {
     return;
   }
 
-  // No backend yet — acknowledge the request locally.
-  isSubmitted.value = true;
+  errorText.value = '';
+  isSubmitting.value = true;
+
+  try {
+    await leadsApi.submit({
+      kind: context.value.kind,
+      name: name.value.trim(),
+      phone: phone.value.trim(),
+      developer_slug: tenantStore.tenant?.developer.slug ?? '',
+      complex_id: context.value.complexId ?? null,
+      space_id: context.value.spaceId ?? null,
+      source_url: window.location.href,
+    });
+
+    isSubmitted.value = true;
+  } catch {
+    errorText.value = 'Не удалось отправить заявку. Попробуйте ещё раз.';
+  } finally {
+    isSubmitting.value = false;
+  }
 };
 </script>
 
@@ -48,15 +75,18 @@ const submit = () => {
     </BaseIconButton>
 
     <template v-if="!isSubmitted">
-      <h2 id="callback-title" :class="$style.title">Обратная связь</h2>
-      <p :class="$style.text">Оставьте номер — менеджер перезвонит и ответит на вопросы.</p>
+      <h2 id="callback-title" :class="$style.title">{{ context.title }}</h2>
+      <p :class="$style.text">{{ context.description }}</p>
 
       <form class="flex flex-col gap-3" @submit.prevent="submit">
         <BaseInput v-model="name" type="text" size="lg" placeholder="Ваше имя" />
         <BaseInput v-model="phone" type="tel" size="lg" mask="+7 (###) ###-##-##" placeholder="+7 (___) ___-__-__" />
-        <BaseButton type="submit" active size="lg" class="w-full">Жду звонка</BaseButton>
+        <BaseButton type="submit" active size="lg" class="w-full" :disabled="isSubmitting">
+          {{ isSubmitting ? 'Отправка…' : 'Жду звонка' }}
+        </BaseButton>
       </form>
 
+      <p v-if="errorText" :class="$style.error">{{ errorText }}</p>
       <p :class="$style.fine">Нажимая кнопку, вы соглашаетесь на обработку персональных данных.</p>
     </template>
 
@@ -103,5 +133,11 @@ const submit = () => {
   margin: 0;
   font-size: 12px;
   color: var(--color-text-secondary);
+}
+
+.error {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-accent);
 }
 </style>
